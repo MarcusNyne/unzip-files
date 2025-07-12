@@ -51,6 +51,8 @@ CreateSubFolder = True
 ExtractFolder = c:\output
 ```
 
+## Learning m9lib
+
 ### Command execution
 
 There are many options for running commands, and this application demonstrates two of them.
@@ -68,7 +70,8 @@ A command can be executed through Control by specifying a configuration file.
     # execute a command with the id "unzip3"
     control.Execute ("unzip3")
 
-    # note that the name of the command section ("UnzipFiles") is used to find the command class to instantiate from the command registry
+    # note that the name of the command section ("UnzipFiles") is used to find the
+    # command class to instantiate from the command registry
 ```
 
 A command can be executed directly by specifying command parameters as a dict.
