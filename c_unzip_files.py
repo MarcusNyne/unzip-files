@@ -29,8 +29,10 @@ class UnzipFiles(uCommand):
         self.p_recurse = self.GetBoolParam("RecurseFolders")
         self.p_extractfolder = self.GetParam("ExtractFolder")
         self.p_createsubfolder = self.GetBoolParam("CreateSubFolder")
-        self.p_cleanfolder = None
-        if self.HasParam("CleanFolder"):
+        self.p_cleanfolder = self.GetParam("CleanFolder")
+        if self.p_cleanfolder =="":
+            self.p_cleanfolder = None
+        if self.p_cleanfolder:
             self.p_cleanfolder = os.path.join(self.GetParam("CleanFolder"), self.GetClass())
 
         self.LogParam("FolderPath")
