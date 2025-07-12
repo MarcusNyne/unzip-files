@@ -1,0 +1,41 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "UnZip Files",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "unzip-files.py",
+            "console": "integratedTerminal",
+            "args": ["-ini", "unzip-files.ini"]
+        },
+        {
+            "name": "Show Args",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "unzip-files.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Run Args",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "unzip-files.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": ["test/source/zip_files", "-sf", "-r", "test/temp0/output"]
+        },
+        {
+            "name": "Test Suite",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "test/test.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}

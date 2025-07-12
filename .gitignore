@@ -1,0 +1,8 @@
+__pycache__/
+test/__pycache__/
+test/*.log
+test/temp?
+venv/
+logs/
+*.log
+~*
