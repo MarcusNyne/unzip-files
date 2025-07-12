@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "unzip-files.py",
             "console": "integratedTerminal",
-            "args": ["-ini", "unzip-files.ini"]
+            "args": ["-ini", "unzip3"]
         },
         {
             "name": "Show Args",

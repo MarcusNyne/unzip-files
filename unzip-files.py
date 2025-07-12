@@ -3,15 +3,14 @@ from m9lib import uControl, uLoggerLevel, uArgs, uLogger, uConfig, uConfigParame
 from c_unzip_files import *
 
 os.system("color")
-args = uArgs([("recurse", "r"), ("subfolder", "sf"), ("cleanfolder", "cf", True), ("ini", None, True), ("c", None, True), ("help", "h")], ["source", "output"])
+args = uArgs([("recurse", "r"), ("subfolder", "sf"), ("cleanfolder", "cf", True), ("ini", None, True), ("help", "h")], ["source", "output"])
 
 # execute in one of four modes
 if args.NoArguments() or args.HasOption("help"):
     # display help
     log = uLogger(Print=True, PrintLevel=uLoggerLevel.INFO, PrintColor=True)
-    log.WriteLine("[+LT_GREEN]UnzipFiles -ini <ini_file> [-c <target>][+]")
-    log.WriteLine("[+CYAN]-ini[+]: run with ini file")
-    log.WriteLine("[+CYAN]-c[+]: specify which command to run by id (otherwise, use Execute)")
+    log.WriteLine("[+LT_GREEN]UnzipFiles -ini <target>[+]")
+    log.WriteLine("[+CYAN]-ini[+]: run with the ini file, and execute <target> command")
     log.WriteLine("[+LT_GREEN]UnzipFiles [-r] [-sf] [-cf <folder>] <source> [<output>][+]")
     log.WriteLine("[+CYAN]-h -help[+]: display help")
     log.WriteLine("[+CYAN]-r -recurse[+]: recurse folders looking for zip files")
@@ -24,9 +23,8 @@ else:
     ini_file = None
     ini_target = None
     if args.HasOption("ini"):
-        ini_file = args.GetOption('ini')
-        if args.HasOption("c"):
-            ini_target = args.GetOption('c')
+        ini_file = "unzip-files.ini"
+        ini_target = args.GetOption('ini')
     else:
         if args.HasOption("recurse"):
             dparams['RecurseFolders'] = args.GetOption('recurse')
@@ -40,8 +38,7 @@ else:
             dparams['ExtractFolder'] = args.GetParam('output')
 
     if ini_file:
-        # in this example, an ini file was specified
-        # the command to run ("target") is optional .. when not specified, command to run comes from [UnzipFilesControl].Execute
+        # in this example, an ini target  was specified
         config = uConfig(ini_file)
         control = uControl("UnzipFilesControl", config)
         control.GetLogger().SetWriteLevel(Level=uLoggerLevel.DETAILS)

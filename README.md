@@ -12,22 +12,22 @@ Searches a location for ZIP files and unzips all those files.  Upon success, the
 
 Installation is made easy by running "install_windows.bat".  This batch file creates a virtual environment in the project folder.
 
-## Batch Execution
+## Configuration Parameters
 
-If "unzipfiles.py" is run without any command-line arguments, the the "unzip-files.ini" is used to drive execution.
+**m9lib** applications are configuration-driven.  Supported parameters can be found in the ini file "unzip-files.ini".
 
-The ini section `[UnzipFilesControl]` contains global configuration.
+The INI section `[UnzipFilesControl]` is called the *"control-section"* and contains application-level configuration.
 - **Logfile**: optional path to where to create a log file; when not specified, only prints to console
-- **Execute**: a section id (or list of section ids) to execute; can also specify "UnzipFiles" to execute defined commands
+- **Execute**: a command id (or list of command ids) to execute
 
-Command sections are named `[UnzipFiles:<id>]`.  You may define as many command sections as you would like, with different ids.  Then, use **Execute** under `[UnzipFilesControl]` to select the commands to execute.
+Command sections are named `[UnzipFiles:<id>]`.  You may define as many command sections as you would like, then use **Execute** under `[UnzipFilesControl]` to select the commands to execute.
 - **FolderPath**: folder to search for ZIP files
 - **RecurseFolders**: when *True*, scan all subfolders under **FolderPath** to find ZIP files
 - **ExtractFolder**: folder where to extract files.  Defaults to location of the ZIP file
 - **CreateSubFolder**: when *True*, a subfolder with the name of the ZIP file is created before extracting files
 - **CleanFolder**: folder where ZIP file will move after successfully extracting files.  If not specified, ZIP file is left in place
 
-If "unzip-files.py" or "unzipfiles.bat" are called with a command section id as a single parameter, the configuration file will be used for execution, and the identified section id will be executed.  This overrides the "target" specified by **Execute**.
+A `*default` section is provided that offers default settings for any section named `UnzipFiles`.  This setting is only used when it is not available in the command section being executed.
 
 ```ini
 [UnzipFilesControl]
@@ -41,6 +41,7 @@ Execute = run
 # This is a default section.  CleanFolder will be used for all commands
 # These defaults are only used when the value is not specified in the command section
 CleanFolder =
+RecurseFolders = False
 
 [UnzipFiles:run]
 # This is a "command section"
@@ -49,121 +50,41 @@ RecurseFolders = False
 CreateSubFolder = True
 ExtractFolder = c:\output
 ```
-See [uConfig](https://github.com/MarcusNyne/m9lib/blob/main/docs/config.md) documentation for more information.
 
-## Command Line Execution
+### Command execution
 
-The batch file "unzipfiles.bat" has been set up to call "unzip-files.py" via the virtual environment, but any command-line arguments are passed directly to the python application.
+There are many options for running commands, and this application demonstrates two of them.
 
-Command line paramters map directly to command-section parameters.
-
-If called with `-h` or no parameters, help text is displayed.  There are two modes of operation, described below.
-
-`UnzipFiles -ini <ini_file> [-c <target>]`.
-- **-ini ini_file**: An ini file to load configuration from
-- **-c target**: The id of a command section to execute.  When not specified, uses [UnzipFilesControl].Execute
-
-`UnzipFiles [-r] [-sf] [-cf <folder>] <source> [<output>]`.
-- **-r**: RecurseFolders (default: *False*)
-- **-sf**: CreateSubFolder (default: *False*)
-- **-cf folder**: CleanFolder (default: do not use clean folder)
-- **source**: FolderPath where ZIP files are to be found
-- **output**: Folder where files will be extracted (default: use ZIP file folder)
-
-No log is generated in this mode.
-
-## Launch.json
-
-Launch.json supports 4 modes of execution:
-- **UnZip Files**: run with local ini file, using default target `unzip-files -ini unzip-files.ini`
-- **Show Args**: run with no arguments, which causes help to be displayed `unzip-files`
-- **Run Args**: an example using command line arguments `unzip-files test/source/zip_files -sf -r test/temp0/output`
-- **Test Suite**: run a suite of 3 tests
-
-It is normal to receive an error about "bad.zip" .. this is an intentionally bad file.
-
-## m9lib Lessons
-
-This section is provided to learn more about how to use the m9lib python library.  This library has a batch-based command-control framework, and other features which are more generally useful.
-
-[Learn more about m9lib](https://github.com/MarcusNyne/m9lib)
-
-### Console logging (in color)
-
-There are four levels of messaging: *DETAILS*, *INFO*, *WARNING*, *ERROR*.
-
-By default, the console logger only displays messages of *WARNING* or above, and does not display in color.
-
-This behavior is changed in code to enable the display of *INFO* messages, and to print in color.
+A command can be executed through Control by specifying a configuration file.
+- Log file location will be read from configuration
+- All command line parameters are in the configuration file (in a command section)
+- A target command can be specified .. if not specified, it is read from the Execute property fo the control section
 
 ```python
-    # this code is used for batch processing, when a configuration file is used for execution
-    # in this case, the command uses a uFileLogger object from the control object
+    # "UnzipFilesControl" is the name of the control section in the ini file
     control = uControl("UnzipFilesControl", "unzip-files.ini")
-    control.GetLogger().SetPrint(Print=True, Level=uLoggerLevel.INFO, Color=True)
-    control.Execute () # when a target is not specified, the Execute property is used
+    # execute commands based on Execute from the control section
+    control.Execute ()
+    # execute a command with the id "unzip3"
+    control.Execute ("unzip3")
 
-    # alternatively, the config file may be loaded before instantiating uControl
-    config = uConfig(r"unzip-files.ini")
-    control = uControl("UnzipFilesControl", config)
-    control.GetLogger().SetPrint(Print=True, Level=uLoggerLevel.INFO, Color=True)
-    control.Execute ("run") # when a target is specified, it is the id of a command section
-
-    # this code is used for command-line execution, when a command is executed directly
-    # in this case, a uLogger object is created and passed to the command
-    # uLogger is different than uFileLogger in that it prints to console only (does not write to file)
-    # note that use of a Control object or configuration can be avoided using direct execution
-    log = uLogger(Print=True, PrintLevel=uLoggerLevel.INFO, PrintColor=True)
-    com = uCommandRegistry.NewCommand("UnzipFiles")
-    com.SetLogger(log)
-    com.Execute({'FolderPath': r'c:\mypath', 'RecurseFolders':True})
-
-    # this system command will enable interpretation of color codes in a command-line window
-    # this is not required when viewing output in vscode
-    os.system("color")
-
-    # when logging, color can be applied by using color codes directly in strings
-    # if color is not enabled, the color codes will be stripped out
-    log.WriteLine("Example of [+RED]roses[+] and [+BLUE]berries[+].")
+    # note that the name of the command section ("UnzipFiles") is used to find the command class to instantiate from the command registry
 ```
 
-[Learn more about uConsoleColor colors](https://github.com/MarcusNyne/m9lib/blob/main/docs/color.md)
-[Learn more about uLogger and uFileLogger](https://github.com/MarcusNyne/m9lib/blob/main/docs/logger.md)
-
-### Configuration and parameters
-
-This application shows many ways in which the configuration file is loaded.
-- By passing the filepath to the control object (**uControl**)
-- Loading directly into a **uConfig** object, and inspecting configuration before passing to the control object
-- Loading with configuration parameters (**uConfigParameters**)
-
-Configuration parameters are overrides that are specified at the time a configuration file is loaded.  Each parameter is a name-value pair which may contain a "section-specification" that identifies sections to apply the values to based on name or id.  In this example, the section name is used.  Here are some examples:
-- `x=y`: apply x=y to all sections; this will override x if it exists, or add x if not
-- `UnzipFiles.x=y`: apply x=y to sections named "UnzipFiles"
-- `UnzipFiles:myid.x=y`: apply x=y to sections named "UnzipFiles" with the id "myid"
-- `:myid.x=y`: apply x=y to sections with the id "myid"
+A command can be executed directly by specifying command parameters as a dict.
+- No ini file is required
+- If you want to use a logger, you will have to specify one: uLogger or uFileLogger
 
 ```python
-# load config by specifying the file
-control = uControl("UnzipFilesControl", "unzip-files.ini")
-
-# load a config object, then pass to control
-config = uConfig("unzip-files.ini")
-control = uControl(config, "unzip-files.ini")
-
-# load a config file with parameters
-config = uConfig("unzip-files.ini", [r'CleanFolder=c:\$clean'])
-
-# load a config file with a list of parameters
-params = uConfigParameters([r'UnzipFiles.CleanFolder=c:\$clean'])
-config = uConfig("unzip-files.ini", params)
-
-# load a config file with a parameter dict, augmented with a section specification
-params = uConfigParameters({'CleanFolder':'c:\$clean'}, "UnzipFiles")
-config = uConfig("unzip-files.ini", params)
+    # create a console logger
+    log = uLogger(Print=True, PrintLevel=uLoggerLevel.INFO, PrintColor=True)
+    # instantiate a command class
+    com = uCommandRegistry.NewCommand("UnzipFiles")
+    # set the logger for the command
+    com.SetLogger(log)
+    # execute the command with dict parameters
+    ret = com.Execute({'FolderPath': 'c:\input', RecurseFolders: True})
 ```
-
-[Learn more about uConfig](https://github.com/MarcusNyne/m9lib/blob/main/docs/config.md)
 
 ### Command implementation
 
